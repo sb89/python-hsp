@@ -1,6 +1,7 @@
 from base64 import b64encode
 from http.client import responses
 from requests import post, Response
+from typing import Dict
 
 from hsp.exception import HSPException
 
@@ -13,7 +14,7 @@ class Client:
         self.password = password
         self.base_url = base_url if base_url else Client.BASE_URL
 
-    def _make_request(self, endpoint: str, json):
+    def _make_request(self, endpoint: str, json: Dict[str, str]):
         headers = {
             'Accept': 'application/json',
             'Authorization': "Basic " + b64encode(f"{self.email}:{self.password}".encode()).decode(),
@@ -36,8 +37,8 @@ class Client:
 
         raise HSPException(status, errors=errors)
 
-    def get_service_metrics(self):
-        return self._make_request('serviceMetrics', {})
+    def get_service_metrics(self, data: Dict[str, str]):
+        return self._make_request('serviceMetrics', data)
 
-    def get_service_details(self, rid):
+    def get_service_details(self, rid: str):
         return self._make_request('serviceDetails', {'rid': rid})
