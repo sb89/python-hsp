@@ -4,6 +4,7 @@ import responses
 from base64 import b64encode
 
 from hsp.client import Client
+from hsp.exception import HSPException
 
 
 class TestClient(unittest.TestCase):
@@ -62,10 +63,31 @@ class TestClientRequests(unittest.TestCase):
         self.assertEqual(responses.calls[0].request.headers.get('Authorization'), expected_value)
 
     @responses.activate
+    def test_client_request_raises_exception_when_non_200(self):
+        responses.add(responses.POST, 'https://hsp-prod.rockshore.net/api/v1/serviceDetails',
+                      json={
+                          "my_journey_errors": {
+                              "errors": [
+                                  "The RID 20180124711020 could not be found"
+                              ]
+                          }
+                      },
+                      headers={'Content-Type': 'application/json;charset=UTF-8'},
+                      status=404)
+
+        try:
+            self.client.get_service_details(self.rid)
+        except HSPException as e:
+            self.assertListEqual(e.errors, ["The RID 20180124711020 could not be found"])
+        except Exception as e:
+            self.fail(f'Unexepcted exception raise: {e}')
+        else:
+            self.fail('Expected exception not raised')
+
+    @responses.activate
     def test_get_service_details_posts_rid(self):
         responses.add(responses.POST, 'https://hsp-prod.rockshore.net/api/v1/serviceDetails', json={}, status=200)
 
         self.client.get_service_details(self.rid)
 
         self.assertEqual(json.loads(responses.calls[0].request.body), {'rid': self.rid})
-

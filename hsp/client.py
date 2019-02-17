@@ -1,5 +1,8 @@
 from base64 import b64encode
-from requests import post
+from http.client import responses
+from requests import post, Response
+
+from hsp.exception import HSPException
 
 
 class Client:
@@ -10,7 +13,7 @@ class Client:
         self.password = password
         self.base_url = base_url if base_url else Client.BASE_URL
 
-    def _make_request(self, endpoint, json):
+    def _make_request(self, endpoint: str, json):
         headers = {
             'Accept': 'application/json',
             'Authorization': "Basic " + b64encode(f"{self.email}:{self.password}".encode()).decode(),
@@ -18,7 +21,20 @@ class Client:
         }
 
         r = post(f'{self.base_url}/{endpoint}', headers=headers, json=json)
+        self._raise_for_error(r)
+
         return r.json()
+
+    def _raise_for_error(self, resp: Response):
+        if resp.status_code == 200:
+            return
+
+        status = responses[resp.status_code]
+        errors = []
+        if resp.headers.get('Content-Type') == 'application/json;charset=UTF-8':
+            errors = resp.json()['my_journey_errors']['errors']
+
+        raise HSPException(status, errors=errors)
 
     def get_service_metrics(self):
         return self._make_request('serviceMetrics', {})
