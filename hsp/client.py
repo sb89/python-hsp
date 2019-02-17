@@ -10,19 +10,18 @@ class Client:
         self.password = password
         self.base_url = base_url if base_url else Client.BASE_URL
 
-    def _make_request(self, endpoint):
+    def _make_request(self, endpoint, json):
         headers = {
             'Accept': 'application/json',
-            'Authorization': b64encode(f"{self.email}:{self.password}".encode()),
+            'Authorization': "Basic " + b64encode(f"{self.email}:{self.password}".encode()).decode(),
             'Content-Type': 'application/json'
         }
 
-        r = post(f'{self.base_url}/{endpoint}', headers=headers)
-
+        r = post(f'{self.base_url}/{endpoint}', headers=headers, json=json)
         return r.json()
 
     def get_service_metrics(self):
-        pass
+        return self._make_request('serviceMetrics', {})
 
-    def get_service_details(self):
-        return self._make_request('serviceDetails')
+    def get_service_details(self, rid):
+        return self._make_request('serviceDetails', {'rid': rid})
