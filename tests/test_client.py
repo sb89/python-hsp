@@ -91,3 +91,21 @@ class TestClientRequests(unittest.TestCase):
         self.client.get_service_details(self.rid)
 
         self.assertEqual(json.loads(responses.calls[0].request.body), {'rid': self.rid})
+
+    @responses.activate
+    def test_get_service_metrics_posts_data(self):
+        responses.add(responses.POST, 'https://hsp-prod.rockshore.net/api/v1/serviceMetrics', json={}, status=200)
+
+        body = {
+            'from_loc': 'BTN',
+            'to_loc': 'VIC',
+            'from_time': '0700',
+            'to_time': '0800',
+            'from_date': '2016-07-01',
+            'to_date': '2016-08-01',
+            'days': 'WEEKDAY'
+        }
+
+        self.client.get_service_metrics(**body)
+
+        self.assertEqual(json.loads(responses.calls[0].request.body), body)

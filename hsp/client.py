@@ -37,7 +37,18 @@ class Client:
 
         raise HSPException(status, errors=errors)
 
-    def get_service_metrics(self, data: Dict[str, str]):
+    def get_service_metrics(self, from_loc: str, to_loc: str, from_time: str, to_time: str, from_date: str,
+                            to_date: str, days: str):
+        data = {
+            'from_loc': from_loc,
+            'to_loc': to_loc,
+            'from_time': from_time,
+            'to_time': to_time,
+            'from_date': from_date,
+            'to_date': to_date,
+            'days': days
+        }
+
         return self._make_request('serviceMetrics', data)
 
     def get_service_details(self, rid: str):
