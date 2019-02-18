@@ -1,2 +1,2 @@
-responses
-requests
+responses~=0.10.5
+requests~=2.21.0
